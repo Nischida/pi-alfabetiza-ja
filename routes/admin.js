@@ -21,11 +21,11 @@ router.get('/collaborators', coordinator, (req, res) => {
     })
 })
 
-router.get('/collaborators/add', (req, res) => {
+router.get('/collaborators/add', coordinator, (req, res) => {
     res.render('admin/addcollaborators')
 })
 
-router.post('/collaborators/add', (req, res) => {
+router.post('/collaborators/add', coordinator, (req, res) => {
     var erros = []
 
     if(!req.body.name || typeof req.body.name == undefined || req.body.name == null) {
