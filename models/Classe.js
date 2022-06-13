@@ -1,24 +1,18 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const moment = require('moment');
 
-const Collaborator = new Schema({
-    name: {
+const Classe = new Schema({
+    status: {
         type: String,
+        default: 'Ativo'
+    },
+    teacher: {
+        type: Schema.Types.ObjectId,
+        ref: "collaborators",
         required: true
     },
-    idrf: {
-        type: Number,
-        required: true
-    },
-    function: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true
-    },
-    password: {
+    phase: {
         type: String,
         required: true
     },
@@ -32,4 +26,4 @@ const Collaborator = new Schema({
     }
 })
 
-mongoose.model('collaborators', Collaborator)
+mongoose.model('classes', Classe)

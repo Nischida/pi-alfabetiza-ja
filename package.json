@@ -5,6 +5,7 @@
     "express": "^4.18.1",
     "express-handlebars": "^6.0.6",
     "express-session": "^1.17.3",
+    "moment": "^2.29.3",
     "mongoose": "^6.3.6",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0"
@@ -13,7 +14,6 @@
   "version": "1.0.0",
   "description": "Protótipo criado para a escola EMEF General Osorio para auxiliar o cadastro e controle de alunos no projeto AlfabetizaJa",
   "main": "app.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"

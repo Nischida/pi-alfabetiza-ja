@@ -69,7 +69,7 @@
     app.use('/admin', admin)
 
 // Outros
-const PORT = process.env.PORT || 8085
+const PORT = process.env.PORT || 9000
 app.listen(PORT, () => {
     console.log('Servidor rodando!')
 })

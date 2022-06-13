@@ -1,0 +1,45 @@
+<h2>Lista de Turmas</h2>
+<hr>
+<a href="/admin/classes/add">
+    <button class="btn btn-success">Adicionar Turma</button>
+</a>
+{{#if classes}}
+<script>
+    document.write(moment().format({{createdDate}}, 'd/MM/YYYY'))
+</script>
+<div class="card mt-4">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                <th scope="col">Professor</th>
+                <th scope="col">Status</th>
+                <th scope="col">Fase</th>
+                <th scope="col">Data de Criação</th>
+                <th scope="col">Data de Modificação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each classes}}
+                    <tr>
+                        <th scope="row"><a href="/admin/classes/edit/{{_id}}" class="link-secondary text-decoration-none">{{teacher.name}}</a></th>
+                        <td>{{status}}</td>
+                        <td>{{phase}}</td>
+                        <td>{{createdDate}}</td>
+                        <td>{{lastModifiedDate}}</td>
+                        <td class="align-middle">
+                            <form method="POST" action="/admin/classes/delete">
+                                <input type="hidden" name="id" value="{{_id}}">
+                                <button type="submit" class="btn btn-danger">X</button>
+                            </form>
+                        </td>
+                    </tr>
+                {{else}}
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{else}}
+<h4 class="mt-3">Nenhuma turma registrada.</h4>
+{{/if}}

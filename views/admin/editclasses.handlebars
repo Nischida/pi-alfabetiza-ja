@@ -1,0 +1,53 @@
+{{#each erros}}
+    <div class="alert alert-danger">{{text}}</div>
+{{else}}
+{{/each}}
+<h3>Editar turma:</h3>
+<div class="card">
+    <div class="card-body">
+        <form action="/admin/classes/edit" method="POST">
+            <input type="hidden" value="{{classe._id}}" name="id">
+            <label for="teacher">Professor:</label>
+                
+                <select class="form-select" name="teacher">
+                    <option value="" selected>Selecione um professor responsável.</option>
+                    {{#each collaborators}}
+                        <option value="{{_id}}">{{name}}</option>
+                    {{else}}
+                        <option value="0">Nenhum professor registrado.</option>
+                    {{/each}}
+                </select>
+            <label for="phase" class="mt-3">Fase:</label>
+                <select class="form-select" name="phase">
+                    {{#ifEquals classe.phase 'Pré-silábico'}}
+                        <option value="Pré-silábico" selected>Pré-silábico</option>
+                    {{else}}
+                        <option value="Pré-silábico">Pré-silábico</option>
+                    {{/ifEquals}}
+                    {{#ifEquals classe.phase 'Silábico'}}
+                        <option value="Silábico" selected>Silábico</option>
+                    {{else}}
+                        <option value="Silábico">Silábico</option>
+                    {{/ifEquals}}
+                    {{#ifEquals classe.phase 'Silábico-alfabético'}}
+                        <option value="Silábico-alfabético" selected>Silábico-alfabético</option>
+                    {{else}}
+                        <option value="Silábico-alfabético">Silábico-alfabético</option>
+                    {{/ifEquals}}
+                    {{#ifEquals classe.phase 'Alfabético'}}
+                        <option value="Alfabético" selected>Alfabético</option>
+                    {{else}}
+                        <option value="Alfabético">Alfabético</option>
+                    {{/ifEquals}}
+                </select>
+            <label for="status" class="mt-3">Status:</label><br>
+            {{#ifEquals classe.status 'Ativo'}}
+                <input class="form-check-input" type="checkbox" value="Ativo" id="flexCheckDefault" name="status" checked>
+            {{else}}
+                <input class="form-check-input" type="checkbox" value="Inativo" id="flexCheckDefault" name="status">
+            {{/ifEquals}}
+            <label class="form-check-label" for="flexCheckDefault">Ativo</label><br>
+            <button type="submit" class="btn btn-success mt-3">Editar turma</button>
+        </form>
+    </div>
+</div>

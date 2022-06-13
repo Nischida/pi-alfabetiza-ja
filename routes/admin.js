@@ -3,16 +3,21 @@ const router = express.Router()
 const mongoose = require('mongoose')
 require('../models/Collaborator')
 const Collaborator =  mongoose.model('collaborators')
+require('../models/Classe')
+const Classe =  mongoose.model('classes')
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
 const {coordinator} = require('../helpers/coordinator')
+const {teacher} = require('../helpers/teacher')
+const res = require('express/lib/response')
+const { get } = require('express/lib/response')
 
-router.get('/', coordinator, (req, res) => {
+router.get('/', teacher, (req, res) => {
     res.render('admin/index')
 })
 
 // Collaborators
-router.get('/collaborators', coordinator, (req, res) => {
+router.get('/collaborators', teacher, (req, res) => {
     Collaborator.find().lean().sort({date: 'desc'}).then((collaborators) => {
         res.render('admin/collaborators', {collaborators: collaborators})
     }).catch((err) => {
@@ -240,6 +245,95 @@ router.get('/collaborators/logout', (req, res) => {
         req.flash('success_msg', 'Deslogado com sucesso.')
         res.redirect('/')
       });
+})
+
+// Classes
+router.get('/classes', (req, res) => {
+    Classe.find().lean().populate('teacher').sort({date: 'desc'}).then((classes) => {
+        res.render('admin/classes', {classes: classes})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao listar os colaboradores')
+        res.redirect('/admin')
+    })
+})
+
+router.get('/classes/add', (req, res) => {
+    Collaborator.find({function: 'professor'}).lean().then((collaborator) => {
+        res.render('admin/addclasses', {collaborators: collaborator})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar os professores: ' + err)
+        res.redirect('/admin/classes')
+    })
+})
+
+router.post('/classes/add', (req, res) => {
+    var erros = []
+
+    if(req.body.teacher == 0) {
+        erros.push({
+            text: 'Professor inválido, registre um professor.'
+        })
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/addclasses', {erros: erros})
+    } else {
+        const newClasse = {
+            teacher: req.body.teacher,
+            phase: req.body.phase
+        }
+
+        new Classe(newClasse).save().then(() => {
+            req.flash('success_msg', 'Turma criada com sucesso!')
+            res.redirect('/admin/classes')
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro durante a criação da turma: ' + err)
+            res.redirect('/admin/classes')
+        })
+    }
+})
+
+router.get('/classes/edit/:id/:pfid', (req, res) => {
+    Classe.findOne({_id: req.params.id}).lean().then((classe) => {
+        Collaborator.find({function: 'professor'}).lean().then((collaborators) => {
+            res.render('admin/editclasses', {collaborators: collaborators, classe: classe})    
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro ao listar os colaboradores: ' + err)
+            res.redirect('/admin/classes')
+        })
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar o formulário de edição: ' + err)
+        res.redirect('/admin/classes')
+    })
+})
+
+router.post('/classes/edit', (req, res) => {
+    Classe.findOne({_id: req.body.id}).then((classe) => {
+        classe.status = (req.body.status) ? 'Ativo' : 'Inativo';
+        classe.teacher = req.body.teacher
+        classe.phase = req.body.phase
+
+        classe.save().then(() => {
+            req.flash('success_msg', 'Turma editada com sucesso!')
+            res.redirect('/admin/classes')
+        }).catch((err) => {
+            req.flash('error_msg', 'Erro interno: ' + err)
+            res.redirect('/admin/classes')
+        })
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao salvar a edição: ' + err)
+        res.redirect('/admin/classes')
+    })
+})
+
+router.post('/classes/delete', (req, res) => {
+    Classe.deleteOne({_id: req.body.id}).then(() => {
+        req.flash('success_msg', 'Turma deletada com sucesso!')
+        res.redirect('/admin/classes')
+    }).catch((err) => {
+        req.flash('error_msg', 'Houver um erro ao deletar a turma: ' + err)
+        res.redirect('/admin/classes')
+    })
 })
 
 // Students
