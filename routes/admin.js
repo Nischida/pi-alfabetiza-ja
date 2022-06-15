@@ -289,17 +289,28 @@ router.post('/classes/add', (req, res) => {
     if(erros.length > 0) {
         res.render('admin/addclasses', {erros: erros})
     } else {
-        const newClasse = {
-            teacher: req.body.teacher,
-            phase: req.body.phase
-        }
-
-        new Classe(newClasse).save().then(() => {
-            req.flash('success_msg', 'Turma criada com sucesso!')
-            res.redirect('/admin/classes')
+        Classe.findOne({teacher: req.body.teacher}).then((classe) => {
+            if(classe) {
+                req.flash('error_msg', 'Já existe uma classe com este colaborador em nosso sistema.')
+                res.redirect('/admin/classes')
+            } else {
+                const newClasse = {
+                    teacher: req.body.teacher,
+                    phase: req.body.phase
+                }
+                
+        
+                new Classe(newClasse).save().then(() => {
+                    req.flash('success_msg', 'Turma criada com sucesso!')
+                    res.redirect('/admin/classes')
+                }).catch((err) => {
+                    req.flash('error_msg', 'Houve um erro durante a criação da turma: ' + err)
+                    res.redirect('/admin/classes')
+                })
+            }
         }).catch((err) => {
-            req.flash('error_msg', 'Houve um erro durante a criação da turma: ' + err)
-            res.redirect('/admin/classes')
+            req.flash('error_msg', 'Houve um erro interno: ' + err)
+            res.redirect('/admin')
         })
     }
 })
@@ -319,23 +330,45 @@ router.get('/classes/edit/:id', (req, res) => {
 })
 
 router.post('/classes/edit', (req, res) => {
-    Classe.findOne({_id: req.body.id}).then((classe) => {
-        classe.status = (req.body.status) ? 'Ativo' : 'Inativo';
-        classe.teacher = req.body.teacher
-        classe.phase = req.body.phase
-        classe.lastModifiedDate = Date.now()
+    var erros = []
 
-        classe.save().then(() => {
-            req.flash('success_msg', 'Turma editada com sucesso!')
-            res.redirect('/admin/classes')
-        }).catch((err) => {
-            req.flash('error_msg', 'Erro interno: ' + err)
-            res.redirect('/admin/classes')
+    if(req.body.teacher == 0) {
+        erros.push({
+            text: 'Professor inválido, registre um professor.'
         })
-    }).catch((err) => {
-        req.flash('error_msg', 'Houve um erro ao salvar a edição: ' + err)
-        res.redirect('/admin/classes')
-    })
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/editclasses', {erros: erros})
+    } else {
+        Classe.findOne({teacher: req.body.teacher}).then((classe) => {
+            if(classe) {
+                req.flash('error_msg', 'Já existe uma classe com este colaborador em nosso sistema.')
+                res.redirect('/admin/classes')
+            } else {
+                Classe.findOne({_id: req.body.id}).then((classe) => {
+                    classe.status = (req.body.status) ? 'Ativo' : 'Inativo';
+                    classe.teacher = req.body.teacher
+                    classe.phase = req.body.phase
+                    classe.lastModifiedDate = Date.now()
+
+                    classe.save().then(() => {
+                        req.flash('success_msg', 'Turma editada com sucesso!')
+                        res.redirect('/admin/classes')
+                    }).catch((err) => {
+                        req.flash('error_msg', 'Erro interno: ' + err)
+                        res.redirect('/admin/classes')
+                    })
+                }).catch((err) => {
+                    req.flash('error_msg', 'Houve um erro ao salvar a edição: ' + err)
+                    res.redirect('/admin/classes')
+                })
+            }
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro interno: ' + err)
+            res.redirect('/admin')
+        })
+    }
 })
 
 router.post('/classes/delete', (req, res) => {
