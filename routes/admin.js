@@ -414,6 +414,38 @@ router.post('/students/add', (req, res) => {
         })
     }
 
+    if(!req.body.ideol || typeof req.body.ideol == undefined || req.body.ideol == null) {
+        erros.push({
+            text: 'EOL inválido.'
+        })
+    } else if(req.body.ideol.length < 7) {
+        erros.push({
+            text: 'EOL muito curto.'
+        })
+    } else if(req.body.ideol.length > 7) {
+        erros.push({
+            text: 'EOL muito longo.'
+        })
+    }
+
+    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length > 1) {
+        erros.push({
+            text: 'Série inválida.'
+        })
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({
+            text: 'E-mail inválido.'
+        })
+    }
+
+    if(req.body.classe == 0 || req.body.classe == null) {
+        erros.push({
+            text: 'Turma inválida'
+        })
+    }
+
     if(erros.length > 0) {
         res.render('admin/addstudents', {
             erros: erros
@@ -458,26 +490,72 @@ router.get('/students/edit/:id', (req, res) => {
 })
 
 router.post('/students/edit', (req, res) => {
-    Student.findOne({_id: req.body.id}).then((student) => {
-        student.name = req.body.name
-        student.ideol = req.body.ideol
-        student.serie = req.body.serie
-        student.email = req.body.email
-        student.phase = req.body.phaseid
-        student.classe = req.body.classe
-        student.lastModifiedDate = Date.now()
+    var erros = []
 
-        student.save().then(() => {
-            req.flash('success_msg', 'Aluno editado com sucesso!')
-            res.redirect('/admin/students')
+    if(!req.body.name || typeof req.body.name == undefined || req.body.name == null) {
+        erros.push({
+            text: 'Nome inválido.'
+        })
+    }
+
+    if(!req.body.ideol || typeof req.body.ideol == undefined || req.body.ideol == null) {
+        erros.push({
+            text: 'EOL inválido.'
+        })
+    } else if(req.body.ideol.length < 7) {
+        erros.push({
+            text: 'EOL muito curto.'
+        })
+    } else if(req.body.ideol.length > 7) {
+        erros.push({
+            text: 'EOL muito longo.'
+        })
+    }
+
+    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length > 1) {
+        erros.push({
+            text: 'Série inválida.'
+        })
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({
+            text: 'E-mail inválido.'
+        })
+    }
+
+    if(req.body.classe == 0 || req.body.classe == null) {
+        erros.push({
+            text: 'Turma inválida'
+        })
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/addstudents', {
+            erros: erros
+        })
+    } else {
+        Student.findOne({_id: req.body.id}).then((student) => {
+            student.name = req.body.name
+            student.ideol = req.body.ideol
+            student.serie = req.body.serie
+            student.email = req.body.email
+            student.phase = req.body.phaseid
+            student.classe = req.body.classe
+            student.lastModifiedDate = Date.now()
+
+            student.save().then(() => {
+                req.flash('success_msg', 'Aluno editado com sucesso!')
+                res.redirect('/admin/students')
+            }).catch((err) => {
+                req.flash('error_msg', 'Erro ao tentar editar o aluno: ' + err)
+                res.redirect('/admin/students')
+            })
         }).catch((err) => {
-            req.flash('error_msg', 'Erro ao tentar editar o aluno: ' + err)
+            req.flash('error_msg', 'Houve um erro ao localizar o aluno: ' + err)
             res.redirect('/admin/students')
         })
-    }).catch((err) => {
-        req.flash('error_msg', 'Houve um erro ao localizar o aluno: ' + err)
-        res.redirect('/admin/students')
-    })
+    }
 })
 
 router.post('/students/delete', (req, res) => {
