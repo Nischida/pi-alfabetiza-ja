@@ -259,7 +259,7 @@ router.get('/collaborators/logout', (req, res) => {
 })
 
 // Classes
-router.get('/classes', (req, res) => {
+router.get('/classes', teacher, (req, res) => {
     Classe.find().lean().populate('teacher').sort({date: 'desc'}).then((classes) => {
         res.render('admin/classes', {classes: classes})
     }).catch((err) => {
@@ -268,7 +268,7 @@ router.get('/classes', (req, res) => {
     })
 })
 
-router.get('/classes/add', (req, res) => {
+router.get('/classes/add', teacher, (req, res) => {
     Collaborator.find({function: 'professor'}).lean().then((collaborator) => {
         res.render('admin/addclasses', {collaborators: collaborator})
     }).catch((err) => {
@@ -277,7 +277,7 @@ router.get('/classes/add', (req, res) => {
     })
 })
 
-router.post('/classes/add', (req, res) => {
+router.post('/classes/add', teacher, (req, res) => {
     var erros = []
 
     if(req.body.teacher == 0) {
@@ -315,7 +315,7 @@ router.post('/classes/add', (req, res) => {
     }
 })
 
-router.get('/classes/edit/:id', (req, res) => {
+router.get('/classes/edit/:id', teacher, (req, res) => {
     Classe.findOne({_id: req.params.id}).lean().then((classe) => {
         Collaborator.find({function: 'professor'}).lean().then((collaborators) => {
             res.render('admin/editclasses', {collaborators: collaborators, classe: classe})
@@ -329,7 +329,7 @@ router.get('/classes/edit/:id', (req, res) => {
     })
 })
 
-router.post('/classes/edit', (req, res) => {
+router.post('/classes/edit', teacher, (req, res) => {
     var erros = []
 
     if(req.body.teacher == 0) {
@@ -371,7 +371,7 @@ router.post('/classes/edit', (req, res) => {
     }
 })
 
-router.post('/classes/delete', (req, res) => {
+router.post('/classes/delete', teacher, (req, res) => {
     Classe.deleteOne({_id: req.body.id}).then(() => {
         req.flash('success_msg', 'Turma deletada com sucesso!')
         res.redirect('/admin/classes')
@@ -382,7 +382,7 @@ router.post('/classes/delete', (req, res) => {
 })
 
 // Students
-router.get('/students', (req, res) => {
+router.get('/students', teacher, (req, res) => {
     Student.find().lean().populate({
         path: 'phase',
         populate: [
@@ -396,7 +396,7 @@ router.get('/students', (req, res) => {
     })
 })
 
-router.get('/students/add', (req, res) => {
+router.get('/students/add', teacher, (req, res) => {
     Classe.find().lean().populate('teacher').then((classes) => {
         res.render('admin/addstudents', {classes: classes})
     }).catch((err) => {
@@ -405,7 +405,7 @@ router.get('/students/add', (req, res) => {
     })
 })
 
-router.post('/students/add', (req, res) => {
+router.post('/students/add', teacher, (req, res) => {
     var erros = []
 
     if(!req.body.name || typeof req.body.name == undefined || req.body.name == null) {
@@ -470,7 +470,7 @@ router.post('/students/add', (req, res) => {
     }
 })
 
-router.get('/students/edit/:id', (req, res) => {
+router.get('/students/edit/:id', teacher, (req, res) => {
     Student.findOne({_id: req.params.id}).lean().populate({
         path: 'phase',
         populate: [
@@ -489,7 +489,7 @@ router.get('/students/edit/:id', (req, res) => {
     })
 })
 
-router.post('/students/edit', (req, res) => {
+router.post('/students/edit', teacher, (req, res) => {
     var erros = []
 
     if(!req.body.name || typeof req.body.name == undefined || req.body.name == null) {
@@ -558,7 +558,7 @@ router.post('/students/edit', (req, res) => {
     }
 })
 
-router.post('/students/delete', (req, res) => {
+router.post('/students/delete', teacher, (req, res) => {
     Student.deleteOne({_id: req.body.id}).then(() => {
         req.flash('success_msg', 'Aluno deletado com sucesso!')
         res.redirect('/admin/students')
@@ -570,11 +570,11 @@ router.post('/students/delete', (req, res) => {
 
 // Relatórios
 // Relação de Turmas
-router.get('/reports', (req, res) => {
+router.get('/reports', teacher, (req, res) => {
     res.render('admin/reports')
 })
 
-router.get('/reports/search', (req, res) => {
+router.get('/reports/search', teacher, (req, res) => {
     Classe.find().lean().populate('teacher').then((classes) => {
         res.render('admin/searchreports', {classes: classes})
     }).catch((err) => {
@@ -583,7 +583,7 @@ router.get('/reports/search', (req, res) => {
     })
 })
 
-router.post('/reports/search', (req, res) => {
+router.post('/reports/search', teacher, (req, res) => {
     Student.find({phase: req.body.classe}).lean().populate({
         path: 'phase',
         populate: [
