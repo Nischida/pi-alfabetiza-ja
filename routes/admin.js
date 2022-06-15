@@ -428,7 +428,7 @@ router.post('/students/add', teacher, (req, res) => {
         })
     }
 
-    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length > 1) {
+    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length < 1) {
         erros.push({
             text: 'Série inválida.'
         })
