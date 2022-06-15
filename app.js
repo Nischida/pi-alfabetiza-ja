@@ -47,6 +47,19 @@
                     } else {
                         return (arg1 != arg2) ? options.inverse(this) : options.fn(this);
                     }
+                },
+                lookup2(collection, id) {
+                    var collectionLength = collection.length;
+
+                    for (var i = 0; i < collectionLength; i++) {
+                        if (collection[i]._id == id) {
+                            var a =  collection[i].phase;
+                        }
+                    }
+                    return a;
+                },
+                var(options) {
+                    return options.fn(this);
                 }
             }
         }))
@@ -69,7 +82,7 @@
     app.use('/admin', admin)
 
 // Outros
-const PORT = process.env.PORT || 9000
+const PORT = process.env.PORT || 1106
 app.listen(PORT, () => {
     console.log('Servidor rodando!')
 })

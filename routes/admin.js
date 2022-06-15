@@ -5,6 +5,8 @@ require('../models/Collaborator')
 const Collaborator =  mongoose.model('collaborators')
 require('../models/Classe')
 const Classe =  mongoose.model('classes')
+require('../models/Student')
+const Student =  mongoose.model('students')
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
 const {coordinator} = require('../helpers/coordinator')
@@ -217,9 +219,18 @@ router.post('/collaborators/edit', coordinator, (req, res) => {
 })
 
 router.post('/collaborators/delete', coordinator, (req, res) => {
-    Collaborator.deleteOne({_id: req.body.id}).then(() => {
-        req.flash('success_msg', 'Colaborador deletado com sucesso!')
-        res.redirect('/admin/collaborators')
+    Collaborator.deleteOne({
+        _id: req.body.id,
+        idrf: {$ne: '1234567'}
+    }).then((result) => {
+        if(result.deletedCount != 0) {
+            req.flash('success_msg', 'Colaborador deletado com sucesso!')
+            res.redirect('/admin/collaborators')
+        } else {
+            req.flash('error_msg', 'Você não tem permissão para deletar este colaborador: ' + JSON.stringify(result))
+            res.redirect('/admin/collaborators')
+        }
+        
     }).catch((err) => {
         req.flash('error_msg', 'Houver um erro ao deletar o colaborador: ' + err)
         res.redirect('/admin/collaborators')
@@ -293,10 +304,10 @@ router.post('/classes/add', (req, res) => {
     }
 })
 
-router.get('/classes/edit/:id/:pfid', (req, res) => {
+router.get('/classes/edit/:id', (req, res) => {
     Classe.findOne({_id: req.params.id}).lean().then((classe) => {
         Collaborator.find({function: 'professor'}).lean().then((collaborators) => {
-            res.render('admin/editclasses', {collaborators: collaborators, classe: classe})    
+            res.render('admin/editclasses', {collaborators: collaborators, classe: classe})
         }).catch((err) => {
             req.flash('error_msg', 'Houve um erro ao listar os colaboradores: ' + err)
             res.redirect('/admin/classes')
@@ -312,6 +323,7 @@ router.post('/classes/edit', (req, res) => {
         classe.status = (req.body.status) ? 'Ativo' : 'Inativo';
         classe.teacher = req.body.teacher
         classe.phase = req.body.phase
+        classe.lastModifiedDate = Date.now()
 
         classe.save().then(() => {
             req.flash('success_msg', 'Turma editada com sucesso!')
@@ -338,7 +350,140 @@ router.post('/classes/delete', (req, res) => {
 
 // Students
 router.get('/students', (req, res) => {
-    res.send('Página de cadastro de estudantes')
+    Student.find().lean().populate({
+        path: 'phase',
+        populate: [
+            {path: 'teacher'}
+        ]
+    }).sort({createdDate: 'desc'}).then((students) => {
+        res.render('admin/students', {students: students})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao listar os alunos: ' + err)
+        res.redirect('/')
+    })
+})
+
+router.get('/students/add', (req, res) => {
+    Classe.find().lean().populate('teacher').then((classes) => {
+        res.render('admin/addstudents', {classes: classes})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar as turmas: ' + err)
+        res.redirect('/admin/students')
+    })
+})
+
+router.post('/students/add', (req, res) => {
+    var erros = []
+
+    if(!req.body.name || typeof req.body.name == undefined || req.body.name == null) {
+        erros.push({
+            text: 'Nome inválido.'
+        })
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/addstudents', {
+            erros: erros
+        })
+    } else {
+        const newStudent = {
+            name: req.body.name,
+            ideol: req.body.ideol,
+            serie: req.body.serie,
+            email: req.body.email,
+            phase: req.body.phaseid,
+            classe: req.body.classe
+        }
+
+        new Student(newStudent).save().then(() => {
+            req.flash('success_msg', 'Aluno criado com sucesso!')
+            res.redirect('/admin/students')
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro durante a criação do aluno: ' + err + '---' + req.body.email)
+            res.redirect('/admin/students')
+        })
+    }
+})
+
+router.get('/students/edit/:id', (req, res) => {
+    Student.findOne({_id: req.params.id}).lean().populate({
+        path: 'phase',
+        populate: [
+            {path: 'teacher'}
+        ]
+    }).then((student) => {
+        Classe.find().lean().populate('teacher').then((classes) => {
+            res.render('admin/editstudents', {student: student, classes: classes})
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro ao carregar as turmas: ' + err)
+            res.redirect('/admin/students')
+        })
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar o formulário de edição: ' + err)
+        res.redirect('/admin/students')
+    })
+})
+
+router.post('/students/edit', (req, res) => {
+    Student.findOne({_id: req.body.id}).then((student) => {
+        student.name = req.body.name
+        student.ideol = req.body.ideol
+        student.serie = req.body.serie
+        student.email = req.body.email
+        student.phase = req.body.phaseid
+        student.classe = req.body.classe
+        student.lastModifiedDate = Date.now()
+
+        student.save().then(() => {
+            req.flash('success_msg', 'Aluno editado com sucesso!')
+            res.redirect('/admin/students')
+        }).catch((err) => {
+            req.flash('error_msg', 'Erro ao tentar editar o aluno: ' + err)
+            res.redirect('/admin/students')
+        })
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao localizar o aluno: ' + err)
+        res.redirect('/admin/students')
+    })
+})
+
+router.post('/students/delete', (req, res) => {
+    Student.deleteOne({_id: req.body.id}).then(() => {
+        req.flash('success_msg', 'Aluno deletado com sucesso!')
+        res.redirect('/admin/students')
+    }).catch((err) => {
+        req.flash('error_msg', 'Houver um erro ao deletar o aluno: ' + err)
+        res.redirect('/admin/students')
+    })
+})
+
+// Relatórios
+// Relação de Turmas
+router.get('/reports', (req, res) => {
+    res.render('admin/reports')
+})
+
+router.get('/reports/search', (req, res) => {
+    Classe.find().lean().populate('teacher').then((classes) => {
+        res.render('admin/searchreports', {classes: classes})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao listar as turmas: ' + err)
+        res.redirect('/admin/reports/search')
+    })
+})
+
+router.post('/reports/search', (req, res) => {
+    Student.find({phase: req.body.classe}).lean().populate({
+        path: 'phase',
+        populate: [
+            {path: 'teacher'}
+        ]
+    }).then((students) => {
+        res.render('admin/reports', {students: students})
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar o relatório: ' + err)
+        res.redirect('/admin/reports/search')
+    })
 })
 
 module.exports = router

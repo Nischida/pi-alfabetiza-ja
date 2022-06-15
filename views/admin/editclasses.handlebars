@@ -1,3 +1,8 @@
+<script>
+    $(document).ready(()=>{
+	    $("#teacher").val('{{classe.teacher}}');
+    }); 
+</script>
 {{#each erros}}
     <div class="alert alert-danger">{{text}}</div>
 {{else}}
@@ -9,7 +14,7 @@
             <input type="hidden" value="{{classe._id}}" name="id">
             <label for="teacher">Professor:</label>
                 
-                <select class="form-select" name="teacher">
+                <select class="form-select" name="teacher" id="teacher">
                     <option value="" selected>Selecione um professor responsável.</option>
                     {{#each collaborators}}
                         <option value="{{_id}}">{{name}}</option>

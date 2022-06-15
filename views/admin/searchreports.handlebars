@@ -1,0 +1,33 @@
+<script>
+    $(document).on('change', '#classe', function() {
+        var id = $(this).val();
+
+        {{#each classes}}
+            if(id == '{{_id}}') {
+                var phase = '{{phase}}';
+            }
+        {{/each}}
+
+        $('#phase').val(phase);
+    });
+</script>
+<h2>Buscar Turmas</h2>
+<hr>
+<div class="card">
+    <div class="card-body">
+        <form action="/admin/reports/search" method="POST">
+            <label for="classe" class="mt-3">Turma:</label>
+                <select class="form-select" name="classe" id="classe">
+                    <option value="0">Selecione a Turma.</option>
+                    {{#each classes}}
+                        <option value="{{_id}}">{{teacher.name}}</option>
+                    {{else}}
+                        <option value="0">Nenhuma turma registrada</option>
+                    {{/each}}
+                </select>
+            <label for="phase" class="mt-3">Fase:</label>
+                <input type="text" name="phase" class="form-control" id="phase" disabled>
+            <button type="submit" class="btn btn-success mt-3">Buscar</button>
+        </form>
+    </div>
+</div>
