@@ -51,8 +51,13 @@
                 },
                 moment(arg1) {
                     moment.locale('pt-br');
-                    var date = moment(arg1).format('DD/MM/YYYY HH:mm:ss')
-                    return date;
+                    const date = arg1;
+                    const format = "DD/MM/YYYY HH:mm:ss";
+                    const timezone = "America/Sao_Paulo";
+                    const dateMoment = moment.tz(date, format, timezone);
+
+                    var date_tz = dateMoment.format('DD/MM/YYYY HH:mm:ss')
+                    return date_tz;
                 }
             }
         }))
