@@ -24,8 +24,8 @@
                         <td>{{idrf}}</td>
                         <td>{{function}}</td>
                         <td>{{email}}</td>
-                        <td>{{createdDate}}</td>
-                        <td>{{lastModifiedDate}}</td>
+                        <td>{{#moment createdDate}}{{/moment}}</td>
+                        <td>{{#moment lastModifiedDate}}{{/moment}}</td>
                         <td class="align-middle">
                             <form method="POST" action="/admin/collaborators/delete">
                                 <input type="hidden" name="id" value="{{_id}}">

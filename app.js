@@ -10,6 +10,7 @@
     const passport = require('passport')
     require('./config/auth')(passport)
     const db = require('./config/db')
+    const moment = require('moment')
 
 // Configurações
     //Session
@@ -48,18 +49,10 @@
                         return (arg1 != arg2) ? options.inverse(this) : options.fn(this);
                     }
                 },
-                lookup2(collection, id) {
-                    var collectionLength = collection.length;
-
-                    for (var i = 0; i < collectionLength; i++) {
-                        if (collection[i]._id == id) {
-                            var a =  collection[i].phase;
-                        }
-                    }
-                    return a;
-                },
-                var(options) {
-                    return options.fn(this);
+                moment(arg1) {
+                    moment.locale('pt-br');
+                    var date = moment(arg1).format('DD/MM/YYYY HH:mm:ss')
+                    return date;
                 }
             }
         }))

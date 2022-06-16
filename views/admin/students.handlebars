@@ -28,8 +28,8 @@
                         <td>{{email}}</td>
                         <td>{{phase.phase}}</td>
                         <td>{{phase.teacher.name}}</td>
-                        <td>{{createdDate}}</td>
-                        <td>{{lastModifiedDate}}</td>
+                        <td>{{#moment createdDate}}{{/moment}}</td>
+                        <td>{{#moment lastModifiedDate}}{{/moment}}</td>
                         <td class="align-middle">
                             <form method="POST" action="/admin/students/delete">
                                 <input type="hidden" name="id" value="{{_id}}">

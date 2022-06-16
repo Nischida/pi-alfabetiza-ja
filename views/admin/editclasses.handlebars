@@ -13,15 +13,8 @@
         <form action="/admin/classes/edit" method="POST">
             <input type="hidden" value="{{classe._id}}" name="id">
             <label for="teacher">Professor:</label>
-                
-                <select class="form-select" name="teacher" id="teacher">
-                    <option value="" selected>Selecione um professor responsável.</option>
-                    {{#each collaborators}}
-                        <option value="{{_id}}">{{name}}</option>
-                    {{else}}
-                        <option value="0">Nenhum professor registrado.</option>
-                    {{/each}}
-                </select>
+                <input type="text" name="teachername" class="form-control" value="{{classe.teacher.name}}" disabled>
+                <input type="hidden" name="teacher" class="form-control" value="{{classe.teacher._id}}" required>
             <label for="phase" class="mt-3">Fase:</label>
                 <select class="form-select" name="phase">
                     {{#ifEquals classe.phase 'Pré-silábico'}}

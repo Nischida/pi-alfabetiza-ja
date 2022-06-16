@@ -316,13 +316,8 @@ router.post('/classes/add', teacher, (req, res) => {
 })
 
 router.get('/classes/edit/:id', teacher, (req, res) => {
-    Classe.findOne({_id: req.params.id}).lean().then((classe) => {
-        Collaborator.find({function: 'professor'}).lean().then((collaborators) => {
-            res.render('admin/editclasses', {collaborators: collaborators, classe: classe})
-        }).catch((err) => {
-            req.flash('error_msg', 'Houve um erro ao listar os colaboradores: ' + err)
-            res.redirect('/admin/classes')
-        })
+    Classe.findOne({_id: req.params.id}).lean().populate('teacher').then((classe) => {
+        res.render('admin/editclasses', {classe: classe})
     }).catch((err) => {
         req.flash('error_msg', 'Houve um erro ao carregar o formulário de edição: ' + err)
         res.redirect('/admin/classes')
@@ -342,7 +337,7 @@ router.post('/classes/edit', teacher, (req, res) => {
         res.render('admin/editclasses', {erros: erros})
     } else {
         Classe.findOne({teacher: req.body.teacher}).then((classe) => {
-            if(classe) {
+            if(classe && classe.teacher != req.body.teacher) {
                 req.flash('error_msg', 'Já existe uma classe com este colaborador em nosso sistema.')
                 res.redirect('/admin/classes')
             } else {
@@ -512,7 +507,7 @@ router.post('/students/edit', teacher, (req, res) => {
         })
     }
 
-    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length > 1) {
+    if(!req.body.serie || typeof req.body.serie == undefined || req.body.serie == null || req.body.serie.length < 1) {
         erros.push({
             text: 'Série inválida.'
         })

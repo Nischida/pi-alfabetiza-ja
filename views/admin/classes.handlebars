@@ -22,8 +22,8 @@
                         <th scope="row"><a href="/admin/classes/edit/{{_id}}" class="link-secondary text-decoration-none">{{teacher.name}}</a></th>
                         <td>{{status}}</td>
                         <td>{{phase}}</td>
-                        <td>{{createdDate}}</td>
-                        <td>{{lastModifiedDate}}</td>
+                        <td>{{#moment createdDate}}{{/moment}}</td>
+                        <td>{{#moment lastModifiedDate}}{{/moment}}</td>
                         <td class="align-middle">
                             <form method="POST" action="/admin/classes/delete">
                                 <input type="hidden" name="id" value="{{_id}}">
