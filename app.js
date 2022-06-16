@@ -11,6 +11,7 @@
     require('./config/auth')(passport)
     const db = require('./config/db')
     const moment = require('moment')
+    const moment_tz = require('moment-timezone')
 
 // Configurações
     //Session
@@ -54,7 +55,7 @@
                     const date = arg1;
                     const format = "DD/MM/YYYY HH:mm:ss";
                     const timezone = "America/Sao_Paulo";
-                    const dateMoment = moment.tz(date, format, timezone);
+                    const dateMoment = moment_tz.tz(date, format, timezone);
 
                     var date_tz = dateMoment.format('DD/MM/YYYY HH:mm:ss')
                     return date_tz;
