@@ -252,7 +252,7 @@ router.post('/collaborators/login', (req, res, next) => {
     })(req, res, next)
 })
 
-router.get('/collaborators/logout', (req, res) => {
+router.get('/collaborators/logout', teacher, (req, res) => {
     req.logout(function(err) {
         if (err) { return next(err); }
         req.flash('success_msg', 'Deslogado com sucesso.')
@@ -661,7 +661,7 @@ router.post('/evolutions/search', teacher, (req, res) => {
 })
 
 // Relation Students x Phase
-router.get('/studentsxphase', (req, res) => {
+router.get('/studentsxphase', teacher, (req, res) => {
     Student.aggregate([
         {
             $lookup: {
@@ -694,7 +694,7 @@ router.get('/studentsxphase', (req, res) => {
 })
 
 // Relation Student x Class
-router.get('/studentsxclasse', (req, res) => {
+router.get('/studentsxclasse', teacher, (req, res) => {
     Student.aggregate([
         {
             $lookup: {
