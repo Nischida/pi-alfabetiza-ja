@@ -7,6 +7,8 @@ require('../models/Classe')
 const Classe =  mongoose.model('classes')
 require('../models/Student')
 const Student =  mongoose.model('students')
+require('../models/StudentHistory')
+const StudentHistory =  mongoose.model('studentshistory')
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
 const {coordinator} = require('../helpers/coordinator')
@@ -260,7 +262,7 @@ router.get('/collaborators/logout', (req, res) => {
 
 // Classes
 router.get('/classes', teacher, (req, res) => {
-    Classe.find().lean().populate('teacher').sort({date: 'desc'}).then((classes) => {
+    Classe.find().lean().populate('teacher').sort({createdDate: 'desc'}).then((classes) => {
         res.render('admin/classes', {classes: classes})
     }).catch((err) => {
         req.flash('error_msg', 'Houve um erro ao listar os colaboradores')
@@ -452,15 +454,28 @@ router.post('/students/add', teacher, (req, res) => {
             serie: req.body.serie,
             email: req.body.email,
             phase: req.body.phaseid,
-            classe: req.body.classe
+            classe: req.body.classe,
+            description: 'Aluno criado'
         }
 
-        new Student(newStudent).save().then(() => {
-            req.flash('success_msg', 'Aluno criado com sucesso!')
-            res.redirect('/admin/students')
-        }).catch((err) => {
-            req.flash('error_msg', 'Houve um erro durante a criação do aluno: ' + err + '---' + req.body.email)
-            res.redirect('/admin/students')
+        Student.findOne({ideol: req.body.ideol}).then((student) => {
+            if(student) {
+                req.flash('error_msg', 'Já existe um aluno com esse EOL em nosso sistema.')
+                res.redirect('/admin/students')
+            } else {
+                new Student(newStudent).save().then(() => {
+                    new StudentHistory(newStudent).save().then(() => {
+                        req.flash('success_msg', 'Aluno criado com sucesso!')
+                        res.redirect('/admin/students')
+                    }).catch((err) => {
+                        req.flash('error_msg', 'Houve um erro durante a criação do aluno no histórico: ' + err + '---' + req.body.email)
+                        res.redirect('/admin/students')
+                    })
+                }).catch((err) => {
+                    req.flash('error_msg', 'Houve um erro durante a criação do aluno: ' + err + '---' + req.body.email)
+                    res.redirect('/admin/students')
+                })
+            }
         })
     }
 })
@@ -531,19 +546,44 @@ router.post('/students/edit', teacher, (req, res) => {
         })
     } else {
         Student.findOne({_id: req.body.id}).then((student) => {
-            student.name = req.body.name
-            student.ideol = req.body.ideol
-            student.serie = req.body.serie
-            student.email = req.body.email
-            student.phase = req.body.phaseid
-            student.classe = req.body.classe
-            student.lastModifiedDate = Date.now()
+            if(student.phase != req.body.phaseid && student.classe != req.body.classe) {
+                var description = 'Alteração na Fase e Turma'
+            } else if (student.phase != req.body.phaseid) {
+                var description = 'Alteração na Fase'
+            } else if (student.classe != req.body.classe) {
+                var description = 'Alteração na Turma'
+            } else {
+                var description =  'Outras alterações'
+            }
 
-            student.save().then(() => {
-                req.flash('success_msg', 'Aluno editado com sucesso!')
-                res.redirect('/admin/students')
+            const newStudent = {
+                name: req.body.name,
+                ideol: req.body.ideol,
+                serie: req.body.serie,
+                email: req.body.email,
+                phase: req.body.phaseid,
+                classe: req.body.classe,
+                description: description,
+                lastModifiedDate: Date.now()
+            }
+            new StudentHistory(newStudent).save().then(() => {
+                student.name = req.body.name
+                student.ideol = req.body.ideol
+                student.serie = req.body.serie
+                student.email = req.body.email
+                student.phase = req.body.phaseid
+                student.classe = req.body.classe
+                student.lastModifiedDate = Date.now()
+
+                student.save().then(() => {
+                    req.flash('success_msg', 'Aluno editado com sucesso!')
+                    res.redirect('/admin/students')
+                }).catch((err) => {
+                    req.flash('error_msg', 'Erro ao tentar editar o aluno: ' + err)
+                    res.redirect('/admin/students')
+                })
             }).catch((err) => {
-                req.flash('error_msg', 'Erro ao tentar editar o aluno: ' + err)
+                req.flash('error_msg', 'Houve um erro durante a criação do aluno no histórico: ' + err + '---' + req.body.email)
                 res.redirect('/admin/students')
             })
         }).catch((err) => {
@@ -563,8 +603,8 @@ router.post('/students/delete', teacher, (req, res) => {
     })
 })
 
-// Relatórios
-// Relação de Turmas
+// Reports
+// Classe Relation
 router.get('/reports', teacher, (req, res) => {
     res.render('admin/reports')
 })
@@ -589,6 +629,100 @@ router.post('/reports/search', teacher, (req, res) => {
     }).catch((err) => {
         req.flash('error_msg', 'Houve um erro ao carregar o relatório: ' + err)
         res.redirect('/admin/reports/search')
+    })
+})
+
+// Student Evolution
+router.get('/evolutions', teacher, (req, res) => {
+    res.render('admin/evolutions')
+})
+
+router.get('/evolutions/search', teacher, (req, res) => {
+    res.render('admin/searchevolutions')
+})
+
+router.post('/evolutions/search', teacher, (req, res) => {
+    StudentHistory.find({ideol: req.body.ideol}).sort({lastModifiedDate: 'desc'}).lean().populate({
+        path: 'phase',
+        populate: [
+            {path: 'teacher'}
+        ]
+    }).then((studenthistory) => {
+        if(studenthistory.length == 0) {
+            req.flash('error_msg', 'Não existe aluno com esse EOL em nosso sistema.')
+            res.redirect('/admin/evolutions/search')
+        } else {
+            res.render('admin/evolutions', {studenthistory: studenthistory})
+        }
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao carregar o relatório: ' + err)
+        res.redirect('/admin/evolutions/search')
+    })
+})
+
+// Relation Students x Phase
+router.get('/studentsxphase', (req, res) => {
+    Student.aggregate([
+        {
+            $lookup: {
+                from: 'classes',
+                localField: 'phase',
+                foreignField: '_id',
+                as: 'phase'
+            }
+        },
+        {
+            $group: {
+                _id: "$phase.phase",
+                total: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $sort: {
+                _id: 1
+            }
+        }
+    ]).then((results) => {
+        res.render('admin/studentsxphase', {results: results})
+        //res.json(results)
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao popular os dados: ' + err)
+        res.redirect('/admin')
+    })
+})
+
+// Relation Student x Class
+router.get('/studentsxclasse', (req, res) => {
+    Student.aggregate([
+        {
+            $lookup: {
+                from: 'collaborators',
+                localField: 'classe',
+                foreignField: '_id',
+                as: 'classe'
+            }
+        },
+        {
+            $group: {
+                _id: "$classe.name",
+                total: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $sort: {
+                _id: 1
+            }
+        }
+    ]).then((results) => {
+        res.render('admin/studentsxclasse', {results: results})
+        //res.json(results)
+    }).catch((err) => {
+        req.flash('error_msg', 'Houve um erro ao popular os dados: ' + err)
+        res.redirect('/admin')
     })
 })
 

@@ -1,28 +1,31 @@
-<h2>Lista de Turmas</h2>
+<h2>Evolução do Aluno</h2>
 <hr>
-<a href="/admin/classes/add">
-    <button class="btn btn-success">Adicionar Turma</button>
-</a>
-{{#if classes}}
+{{#if studenthistory}}
 <div class="card mt-4">
     <div class="card-body table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
-                <th scope="col">Professor</th>
-                <th scope="col">Status</th>
+                <th scope="col">EOL</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Série</th>
+                <th scope="col">Email</th>
                 <th scope="col">Fase</th>
-                <th scope="col">Data de Criação</th>
+                <th scope="col">Turma</th>
+                <th scope="col">Descrição</th>
                 <th scope="col">Data de Modificação</th>
                 </tr>
             </thead>
             <tbody>
-                {{#each classes}}
+                {{#each studenthistory}}
                     <tr>
-                        <th scope="row"><a href="/admin/classes/edit/{{_id}}" class="link-secondary text-decoration-none">{{teacher.name}}</a></th>
-                        <td>{{status}}</td>
-                        <td>{{phase}}</td>
-                        <td>{{#moment createdDate}}{{/moment}}</td>
+                        <th scope="row">{{ideol}}</th>
+                        <td>{{name}}</td>
+                        <td>{{serie}}</td>
+                        <td>{{email}}</td>
+                        <td>{{phase.phase}}</td>
+                        <td>{{phase.teacher.name}}</td>
+                        <td>{{description}}</td>
                         <td>{{#moment lastModifiedDate}}{{/moment}}</td>
                         <td class="align-middle">
                             <form method="POST" action="/admin/classes/delete">

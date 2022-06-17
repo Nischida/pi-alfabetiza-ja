@@ -59,6 +59,10 @@
 
                     var date_tz = dateMoment.format('DD/MM/YYYY HH:mm:ss')
                     return date_tz;
+                },
+                json(arg1) {
+                    var json = arg1;
+                    return json[0];
                 }
             }
         }))
